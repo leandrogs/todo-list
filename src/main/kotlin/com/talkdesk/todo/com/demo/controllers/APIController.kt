@@ -5,6 +5,8 @@ import com.talkdesk.todo.com.demo.models.Task
 import com.talkdesk.todo.com.demo.models.todoUpdateDTO
 import com.talkdesk.todo.com.demo.repositories.TaskRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
@@ -32,14 +34,21 @@ class APIController {
 
     @PutMapping("/todos/{id}")
     fun todos(@PathVariable id: String, @RequestBody todoUpdate: todoUpdateDTO): Task {
-        val task = repository.findById(id).get()
-        val name = todoUpdate.name ?: task.name
-        val status = todoUpdate.status ?: task.status
 
-        val updated = task.copy(name=name, status=status)
-        repository.save(updated)
+        if ( repository.existsById(id) ) {
+            val task = repository.findById(id).get()
+            val name = todoUpdate.name ?: task.name
+            val status = todoUpdate.status ?: task.status
 
-        return updated
+            val updated = task.copy(name=name, status=status)
+            repository.save(updated)
+
+            return updated
+
+        } else {
+            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+        }
+
     }
 
 }
