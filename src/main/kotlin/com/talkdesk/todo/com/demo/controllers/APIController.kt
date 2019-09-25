@@ -1,17 +1,45 @@
 package com.talkdesk.todo.com.demo.controllers
 
+import com.talkdesk.todo.com.demo.Main
 import com.talkdesk.todo.com.demo.models.Task
+import com.talkdesk.todo.com.demo.models.todoUpdateDTO
+import com.talkdesk.todo.com.demo.repositories.TaskRepository
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class APIController {
 
-    @GetMapping("/")
-    fun all(): Task {
-        val a = Task("123","New Task",false)
-        return a
+    @Autowired
+    lateinit var repository: TaskRepository
+
+    @GetMapping("/todos")
+    fun all(): MutableIterable<Task> {
+        return repository.findAll()
+    }
+
+    @PostMapping("/todos")
+    fun todos(@RequestBody task: Task): Task {
+        repository.save(task)
+        return task
+    }
+
+    @DeleteMapping("/todos/{id}")
+    fun todos(@PathVariable id: String) {
+        repository.deleteById(id)
+    }
+
+    @PutMapping("/todos/{id}")
+    fun todos(@PathVariable id: String, @RequestBody todoUpdate: todoUpdateDTO): Task {
+        val task = repository.findById(id).get()
+        val name = todoUpdate.name ?: task.name
+        val status = todoUpdate.status ?: task.status
+
+        val updated = task.copy(name=name, status=status)
+        repository.save(updated)
+
+        return updated
     }
 
 }
