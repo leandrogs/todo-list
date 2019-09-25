@@ -1,5 +1,6 @@
 package com.talkdesk.todo.com.demo
 
+import com.talkdesk.todo.com.demo.models.Task
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
