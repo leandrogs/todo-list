@@ -33,20 +33,20 @@ class APIController {
     }
 
     @PutMapping("/todos/{id}")
-    fun todos(@PathVariable id: String, @RequestBody todoUpdate: todoUpdateDTO): Task {
+    fun todos(@PathVariable id: String, @RequestBody todoUpdate: todoUpdateDTO): ResponseEntity<Task> {
+        val task = repository.findById(id).map {
+            val name = todoUpdate.name ?: it.name
+            val status = todoUpdate.status ?: it.status
 
-        if ( repository.existsById(id) ) {
-            val task = repository.findById(id).get()
-            val name = todoUpdate.name ?: task.name
-            val status = todoUpdate.status ?: task.status
+            it.copy(name=name, status=status)
+        }
 
-            val updated = task.copy(name=name, status=status)
-            repository.save(updated)
+        return if ( task.isPresent ) {
+            val updated = repository.save(task.get())
 
-            return updated
-
+            ResponseEntity.ok().body(updated)
         } else {
-            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+            ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
 
     }
